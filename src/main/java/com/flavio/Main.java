@@ -4,9 +4,9 @@ public class Main {
     public static void main(String[] args) {
 
         System.out.println("Hello world!");
-        Motor motor = new Motor();
+        TableroSudoku tablero = new TableroSudoku();
         Vista vista = new Vista();
 
-        vista.imprimirCuadricula(motor.getCuadricula());
+        vista.imprimirCuadricula(tablero.getCuadricula());
     }
 }

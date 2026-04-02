@@ -1,10 +1,10 @@
 package com.flavio;
 
-public class Motor {
+public class TableroSudoku {
 
     private int[][] cuadricula = new int[9][9];
 
-    public Motor() {
+    public TableroSudoku() {
         inicializarCuadricula();
     }
 

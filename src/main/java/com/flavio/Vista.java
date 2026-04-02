@@ -71,7 +71,7 @@ public class Vista extends JFrame {
                 campo.setHorizontalAlignment(SwingConstants.CENTER);
                 campo.setFont(fuente);
                 campo.setBackground(FONDO_CELDA);
-                campo.setBorder(BorderFactory.createLineBorder(BORDE_CELDA));
+                campo.setBorder(crearBordeCelda(fila, columna));
 
                 final int filaActual = fila;
                 final int columnaActual = columna;
@@ -90,6 +90,22 @@ public class Vista extends JFrame {
         }
         panel.setBorder(BorderFactory.createTitledBorder("Tablero 9x9"));
         return panel;
+    }
+
+
+    private javax.swing.border.Border crearBordeCelda(int fila, int columna) {
+        int grosorSuperior = (fila % 3 == 0) ? 3 : 1;
+        int grosorIzquierdo = (columna % 3 == 0) ? 3 : 1;
+        int grosorInferior = (fila == 8 || (fila + 1) % 3 == 0) ? 3 : 1;
+        int grosorDerecho = (columna == 8 || (columna + 1) % 3 == 0) ? 3 : 1;
+
+        return BorderFactory.createMatteBorder(
+                grosorSuperior,
+                grosorIzquierdo,
+                grosorInferior,
+                grosorDerecho,
+                BORDE_CELDA
+        );
     }
 
     private JPanel crearPanelAcciones() {
@@ -331,39 +347,6 @@ public class Vista extends JFrame {
                 }
             }
         }
-
-        refrescarVistaDesdeTablero();
-        return true;
-    }
-
-    private void refrescarVistaDesdeTablero() {
-        int[][] datos = tablero.getCuadricula();
-        for (int fila = 0; fila < 9; fila++) {
-            for (int columna = 0; columna < 9; columna++) {
-                int valor = datos[fila][columna];
-                celdas[fila][columna].setText(valor == 0 ? "" : String.valueOf(valor));
-                celdas[fila][columna].setBackground(tablero.esCeldaFija(fila, columna) ? FONDO_CELDA_FIJA : FONDO_CELDA);
-            }
-        }
-    }
-
-    private Coordenada obtenerCeldaSeleccionada() {
-        for (int fila = 0; fila < 9; fila++) {
-            for (int columna = 0; columna < 9; columna++) {
-                if (celdas[fila][columna].isFocusOwner()) {
-                    return new Coordenada(fila, columna);
-                }
-            }
-        }
-        return null;
-    }
-
-    private void escribirMensaje(String mensaje) {
-        areaMensajes.setText(mensaje);
-    }
-
-    public static void iniciar() {
-        SwingUtilities.invokeLater(Vista::new);
     }
 
     private void escribirMensaje(String mensaje) {

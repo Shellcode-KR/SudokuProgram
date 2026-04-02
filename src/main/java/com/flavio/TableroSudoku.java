@@ -2,94 +2,104 @@ package com.flavio;
 
 public class TableroSudoku {
 
-    private int[][] cuadricula = new int[9][9];
-
-    public TableroSudoku() {
-        inicializarCuadricula();
-    }
+    private final int[][] cuadricula = new int[9][9];
+    private final boolean[][] celdasFijas = new boolean[9][9];
 
     public int[][] getCuadricula() {
-        return cuadricula;
-    }
-
-    public void inicializarCuadricula() {
-        for (int i = 0; i < cuadricula.length; i++) {
-            for (int j = 0; j < cuadricula[i].length; j++) {
-                cuadricula[i][j] = 0;
-            }
+        int[][] copia = new int[9][9];
+        for (int fila = 0; fila < 9; fila++) {
+            System.arraycopy(cuadricula[fila], 0, copia[fila], 0, 9);
         }
+        return copia;
     }
 
-    // Solo permitimos números del 1 al 9 para jugar
-    public boolean esNumeroPermitido(int numero) {
-        return numero >= 1 && numero <= 9;
-    }
-
-    public boolean existeEnFila(int fila, int numero, int columnaActual) {
-        for (int i = 0; i < 9; i++) {
-            if (i != columnaActual && cuadricula[fila][i] == numero) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean existeEnColumna(int columna, int numero, int filaActual) {
-        for (int i = 0; i < 9; i++) {
-            if (i != filaActual && cuadricula[i][columna] == numero) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean existeEnBloque(int fila, int columna, int numero) {
-        int filaInicial = (fila / 3) * 3;
-        int columnaInicial = (columna / 3) * 3;
-
-        for (int i = filaInicial; i < filaInicial + 3; i++) {
-            for (int j = columnaInicial; j < columnaInicial + 3; j++) {
-                if ((i != fila || j != columna) && cuadricula[i][j] == numero) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-    public boolean posicionValida(int fila, int columna) {
-        return fila >= 0 && fila < 9 && columna >= 0 && columna < 9;
-    }
-    public boolean sePuedeColocar(int fila, int columna, int numero) {
-        if (!esNumeroPermitido(numero)) {
-            return false;
-        }
-        if (!posicionValida(fila, columna)) {
-            return false;
-        }
-
-        return !existeEnFila(fila, numero, columna)
-                && !existeEnColumna(columna, numero, fila)
-                && !existeEnBloque(fila, columna, numero);
-    }
-
-    public boolean setNumero(int fila, int columna, int numero) {
-        if (sePuedeColocar(fila, columna, numero)) {
-            cuadricula[fila][columna] = numero;
-            return true;
-        }
-        return false;
-    }
-
-    public void vaciarCelda(int fila, int columna) {
-        if (posicionValida(fila, columna)) {
-            cuadricula[fila][columna] = 0;
-        }
-
-    }
     public int getValor(int fila, int columna) {
-        if (!posicionValida(fila, columna)) {
+        if (!ValidadorSudoku.posicionValida(fila, columna)) {
             return -1;
         }
         return cuadricula[fila][columna];
+    }
+
+    public boolean esCeldaFija(int fila, int columna) {
+        if (!ValidadorSudoku.posicionValida(fila, columna)) {
+            return false;
+        }
+        return celdasFijas[fila][columna];
+    }
+
+    public boolean setNumero(int fila, int columna, int numero) {
+        if (!ValidadorSudoku.posicionValida(fila, columna) || esCeldaFija(fila, columna)) {
+            return false;
+        }
+        if (numero == 0) {
+            cuadricula[fila][columna] = 0;
+            return true;
+        }
+        if (!ValidadorSudoku.puedeColocar(cuadricula, fila, columna, numero)) {
+            return false;
+        }
+        cuadricula[fila][columna] = numero;
+        return true;
+    }
+
+    public boolean vaciarCelda(int fila, int columna) {
+        return setNumero(fila, columna, 0);
+    }
+
+    public void limpiarTablero() {
+        for (int fila = 0; fila < 9; fila++) {
+            for (int columna = 0; columna < 9; columna++) {
+                cuadricula[fila][columna] = 0;
+                celdasFijas[fila][columna] = false;
+            }
+        }
+    }
+
+    public void limpiarNoFijas() {
+        for (int fila = 0; fila < 9; fila++) {
+            for (int columna = 0; columna < 9; columna++) {
+                if (!celdasFijas[fila][columna]) {
+                    cuadricula[fila][columna] = 0;
+                }
+            }
+        }
+    }
+
+    public boolean cargarTableroInicial(int[][] valores) {
+        if (valores == null || valores.length != 9) {
+            return false;
+        }
+        for (int fila = 0; fila < 9; fila++) {
+            if (valores[fila] == null || valores[fila].length != 9) {
+                return false;
+            }
+        }
+        if (!ValidadorSudoku.tableroConsistente(valores)) {
+            return false;
+        }
+
+        for (int fila = 0; fila < 9; fila++) {
+            for (int columna = 0; columna < 9; columna++) {
+                int valor = valores[fila][columna];
+                cuadricula[fila][columna] = valor;
+                celdasFijas[fila][columna] = valor != 0;
+            }
+        }
+        return true;
+    }
+
+    public boolean tableroCompleto() {
+        for (int fila = 0; fila < 9; fila++) {
+            for (int columna = 0; columna < 9; columna++) {
+                if (cuadricula[fila][columna] == 0) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public boolean tableroInvalido() {
+        return !ValidadorSudoku.tableroConsistente(cuadricula);
     }
 }

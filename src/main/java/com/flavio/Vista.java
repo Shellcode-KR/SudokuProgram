@@ -19,6 +19,15 @@ import java.util.Map;
 
 public class Vista extends JFrame {
 
+    private static final Color FONDO_APP = new Color(232, 244, 253);
+    private static final Color FONDO_TABLERO = new Color(240, 250, 255);
+    private static final Color FONDO_CELDA = new Color(250, 254, 255);
+    private static final Color FONDO_CELDA_FIJA = new Color(210, 232, 245);
+    private static final Color BORDE_CELDA = new Color(142, 184, 214);
+    private static final Color COLOR_BOTON = new Color(187, 222, 251);
+    private static final Color COLOR_BOTON_TEXTO = new Color(27, 72, 102);
+    private static final Color FONDO_MENSAJES = new Color(230, 246, 255);
+
     private final JTextField[][] celdas = new JTextField[9][9];
     private final JTextArea areaMensajes = new JTextArea(8, 40);
     private final TableroSudoku tablero = new TableroSudoku();
@@ -29,6 +38,7 @@ public class Vista extends JFrame {
         setTitle("Sudoku - Editor y Resolutor");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
+        getContentPane().setBackground(FONDO_APP);
 
         add(crearPanelTablero(), BorderLayout.CENTER);
         add(crearPanelAcciones(), BorderLayout.EAST);
@@ -41,6 +51,7 @@ public class Vista extends JFrame {
 
     private JPanel crearPanelTablero() {
         JPanel panel = new JPanel(new GridLayout(9, 9));
+        panel.setBackground(FONDO_TABLERO);
         Font fuente = new Font("SansSerif", Font.BOLD, 20);
 
         for (int fila = 0; fila < 9; fila++) {
@@ -48,7 +59,8 @@ public class Vista extends JFrame {
                 JTextField campo = new JTextField();
                 campo.setHorizontalAlignment(SwingConstants.CENTER);
                 campo.setFont(fuente);
-                campo.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+                campo.setBackground(FONDO_CELDA);
+                campo.setBorder(BorderFactory.createLineBorder(BORDE_CELDA));
                 celdas[fila][columna] = campo;
                 panel.add(campo);
             }
@@ -59,14 +71,15 @@ public class Vista extends JFrame {
 
     private JPanel crearPanelAcciones() {
         JPanel panel = new JPanel(new GridLayout(0, 1, 6, 6));
+        panel.setBackground(FONDO_APP);
 
-        JButton btnCargar = new JButton("Cargar ejemplo");
-        JButton btnLimpiar = new JButton("Limpiar tablero");
-        JButton btnPosiblesCelda = new JButton("Posibles en celda");
-        JButton btnPosiblesFila = new JButton("Posibles en fila");
-        JButton btnPosiblesColumna = new JButton("Posibles en columna");
-        JButton btnPosiblesBloque = new JButton("Posibles en bloque");
-        JButton btnResolver = new JButton("Resolver siguiente");
+        JButton btnCargar = crearBoton("Cargar ejemplo");
+        JButton btnLimpiar = crearBoton("Limpiar tablero");
+        JButton btnPosiblesCelda = crearBoton("Posibles en celda");
+        JButton btnPosiblesFila = crearBoton("Posibles en fila");
+        JButton btnPosiblesColumna = crearBoton("Posibles en columna");
+        JButton btnPosiblesBloque = crearBoton("Posibles en bloque");
+        JButton btnResolver = crearBoton("Resolver siguiente");
 
         btnCargar.addActionListener(e -> cargarEjemplo());
         btnLimpiar.addActionListener(e -> {
@@ -156,10 +169,19 @@ public class Vista extends JFrame {
         return panel;
     }
 
+    private JButton crearBoton(String texto) {
+        JButton boton = new JButton(texto);
+        boton.setBackground(COLOR_BOTON);
+        boton.setForeground(COLOR_BOTON_TEXTO);
+        boton.setFocusPainted(false);
+        return boton;
+    }
+
     private JScrollPane crearPanelMensajes() {
         areaMensajes.setEditable(false);
         areaMensajes.setLineWrap(true);
         areaMensajes.setWrapStyleWord(true);
+        areaMensajes.setBackground(FONDO_MENSAJES);
         JScrollPane scroll = new JScrollPane(areaMensajes);
         scroll.setBorder(BorderFactory.createTitledBorder("Explicación"));
         return scroll;
@@ -224,8 +246,7 @@ public class Vista extends JFrame {
             for (int columna = 0; columna < 9; columna++) {
                 int valor = datos[fila][columna];
                 celdas[fila][columna].setText(valor == 0 ? "" : String.valueOf(valor));
-                celdas[fila][columna].setBackground(tablero.esCeldaFija(fila, columna)
-                        ? new Color(230, 230, 230) : Color.WHITE);
+                celdas[fila][columna].setBackground(tablero.esCeldaFija(fila, columna) ? FONDO_CELDA_FIJA : FONDO_CELDA);
             }
         }
     }

@@ -67,15 +67,18 @@ public class TableroSudoku {
     }
 
     public int[][] getCuadricula() {
-        return cuadricula;
+        int[][] copia = new int[9][9];
+        for (int fila = 0; fila < 9; fila++) {
+            System.arraycopy(cuadricula[fila], 0, copia[fila], 0, 9);
+        }
+        return copia;
     }
 
-    public void inicializarCuadricula() {
-        for (int i = 0; i < cuadricula.length; i++) {
-            for (int j = 0; j < cuadricula[i].length; j++) {
-                cuadricula[i][j] = 0;
-            }
+    public int getValor(int fila, int columna) {
+        if (!ValidadorSudoku.posicionValida(fila, columna)) {
+            return -1;
         }
+        return cuadricula[fila][columna];
     }
 
     public void cargarTablero(int[][] valores) {
@@ -91,32 +94,39 @@ public class TableroSudoku {
         return numero >= 1 && numero <= 9;
     }
 
-    public boolean existeEnFila(int fila, int numero, int columnaActual) {
-        for (int i = 0; i < 9; i++) {
-            if (i != columnaActual && cuadricula[fila][i] == numero) {
-                return true;
-            }
+    public boolean setNumero(int fila, int columna, int numero) {
+        if (!ValidadorSudoku.posicionValida(fila, columna) || esCeldaFija(fila, columna)) {
+            return false;
         }
-        return false;
+        if (numero == 0) {
+            cuadricula[fila][columna] = 0;
+            return true;
+        }
+        if (!ValidadorSudoku.puedeColocar(cuadricula, fila, columna, numero)) {
+            return false;
+        }
+        cuadricula[fila][columna] = numero;
+        return true;
     }
 
-    public boolean existeEnColumna(int columna, int numero, int filaActual) {
-        for (int i = 0; i < 9; i++) {
-            if (i != filaActual && cuadricula[i][columna] == numero) {
-                return true;
-            }
-        }
-        return false;
+    public boolean vaciarCelda(int fila, int columna) {
+        return setNumero(fila, columna, 0);
     }
 
-    public boolean existeEnBloque(int fila, int columna, int numero) {
-        int filaInicial = (fila / 3) * 3;
-        int columnaInicial = (columna / 3) * 3;
+    public void limpiarTablero() {
+        for (int fila = 0; fila < 9; fila++) {
+            for (int columna = 0; columna < 9; columna++) {
+                cuadricula[fila][columna] = 0;
+                celdasFijas[fila][columna] = false;
+            }
+        }
+    }
 
-        for (int i = filaInicial; i < filaInicial + 3; i++) {
-            for (int j = columnaInicial; j < columnaInicial + 3; j++) {
-                if ((i != fila || j != columna) && cuadricula[i][j] == numero) {
-                    return true;
+    public void limpiarNoFijas() {
+        for (int fila = 0; fila < 9; fila++) {
+            for (int columna = 0; columna < 9; columna++) {
+                if (!celdasFijas[fila][columna]) {
+                    cuadricula[fila][columna] = 0;
                 }
             }
         }
@@ -131,28 +141,34 @@ public class TableroSudoku {
         if (!esNumeroPermitido(numero)) {
             return false;
         }
-        if (!posicionValida(fila, columna)) {
+        for (int fila = 0; fila < 9; fila++) {
+            if (valores[fila] == null || valores[fila].length != 9) {
+                return false;
+            }
+        }
+        if (!ValidadorSudoku.tableroConsistente(valores)) {
             return false;
         }
 
-        return !existeEnFila(fila, numero, columna)
-                && !existeEnColumna(columna, numero, fila)
-                && !existeEnBloque(fila, columna, numero);
+        for (int fila = 0; fila < 9; fila++) {
+            for (int columna = 0; columna < 9; columna++) {
+                int valor = valores[fila][columna];
+                cuadricula[fila][columna] = valor;
+                celdasFijas[fila][columna] = valor != 0;
+            }
+        }
+        return true;
     }
 
-    public boolean setNumero(int fila, int columna, int numero) {
-        if (sePuedeColocar(fila, columna, numero)) {
-            cuadricula[fila][columna] = numero;
-            return true;
+    public boolean tableroCompleto() {
+        for (int fila = 0; fila < 9; fila++) {
+            for (int columna = 0; columna < 9; columna++) {
+                if (cuadricula[fila][columna] == 0) {
+                    return false;
+                }
+            }
         }
-        return false;
-    }
-
-    public void vaciarCelda(int fila, int columna) {
-        if (posicionValida(fila, columna)) {
-            cuadricula[fila][columna] = 0;
-        }
-
+        return true;
     }
 
     public int getValor(int fila, int columna) {

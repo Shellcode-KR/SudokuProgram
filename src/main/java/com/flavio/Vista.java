@@ -331,6 +331,39 @@ public class Vista extends JFrame {
                 }
             }
         }
+
+        refrescarVistaDesdeTablero();
+        return true;
+    }
+
+    private void refrescarVistaDesdeTablero() {
+        int[][] datos = tablero.getCuadricula();
+        for (int fila = 0; fila < 9; fila++) {
+            for (int columna = 0; columna < 9; columna++) {
+                int valor = datos[fila][columna];
+                celdas[fila][columna].setText(valor == 0 ? "" : String.valueOf(valor));
+                celdas[fila][columna].setBackground(tablero.esCeldaFija(fila, columna) ? FONDO_CELDA_FIJA : FONDO_CELDA);
+            }
+        }
+    }
+
+    private Coordenada obtenerCeldaSeleccionada() {
+        for (int fila = 0; fila < 9; fila++) {
+            for (int columna = 0; columna < 9; columna++) {
+                if (celdas[fila][columna].isFocusOwner()) {
+                    return new Coordenada(fila, columna);
+                }
+            }
+        }
+        return null;
+    }
+
+    private void escribirMensaje(String mensaje) {
+        areaMensajes.setText(mensaje);
+    }
+
+    public static void iniciar() {
+        SwingUtilities.invokeLater(Vista::new);
     }
 
     private void escribirMensaje(String mensaje) {

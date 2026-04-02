@@ -1,5 +1,9 @@
 package com.flavio;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class TableroSudoku {
 
     private final int[][] cuadricula = new int[9][9];

@@ -2,7 +2,9 @@ package com.flavio;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -14,6 +16,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.util.List;
 import java.util.Map;
 
@@ -23,6 +27,7 @@ public class Vista extends JFrame {
     private static final Color FONDO_TABLERO = new Color(240, 250, 255);
     private static final Color FONDO_CELDA = new Color(250, 254, 255);
     private static final Color FONDO_CELDA_FIJA = new Color(210, 232, 245);
+    private static final Color FONDO_CELDA_SELECCIONADA = new Color(183, 222, 244);
     private static final Color BORDE_CELDA = new Color(142, 184, 214);
     private static final Color COLOR_BOTON = new Color(187, 222, 251);
     private static final Color COLOR_BOTON_TEXTO = new Color(27, 72, 102);
@@ -34,6 +39,9 @@ public class Vista extends JFrame {
     private final AnalizadorCandidatos analizador = new AnalizadorCandidatos();
     private final ResolutorSudoku resolutor = new ResolutorSudoku();
 
+    private final JComboBox<Integer> selectorFila = new JComboBox<>();
+    private final JComboBox<Integer> selectorColumna = new JComboBox<>();
+
     public Vista() {
         setTitle("Sudoku - Editor y Resolutor");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -43,6 +51,9 @@ public class Vista extends JFrame {
         add(crearPanelTablero(), BorderLayout.CENTER);
         add(crearPanelAcciones(), BorderLayout.EAST);
         add(crearPanelMensajes(), BorderLayout.SOUTH);
+
+        inicializarSelectores();
+        actualizarResaltadoSeleccion();
 
         pack();
         setLocationRelativeTo(null);
@@ -61,6 +72,18 @@ public class Vista extends JFrame {
                 campo.setFont(fuente);
                 campo.setBackground(FONDO_CELDA);
                 campo.setBorder(BorderFactory.createLineBorder(BORDE_CELDA));
+
+                final int filaActual = fila;
+                final int columnaActual = columna;
+                campo.addFocusListener(new FocusAdapter() {
+                    @Override
+                    public void focusGained(FocusEvent e) {
+                        selectorFila.setSelectedIndex(filaActual);
+                        selectorColumna.setSelectedIndex(columnaActual);
+                        actualizarResaltadoSeleccion();
+                    }
+                });
+
                 celdas[fila][columna] = campo;
                 panel.add(campo);
             }
@@ -70,8 +93,25 @@ public class Vista extends JFrame {
     }
 
     private JPanel crearPanelAcciones() {
-        JPanel panel = new JPanel(new GridLayout(0, 1, 6, 6));
+        JPanel panel = new JPanel(new BorderLayout(0, 8));
         panel.setBackground(FONDO_APP);
+
+        JPanel panelSeleccion = new JPanel(new GridLayout(3, 2, 6, 6));
+        panelSeleccion.setBackground(FONDO_APP);
+        panelSeleccion.setBorder(BorderFactory.createTitledBorder("Seleccionar"));
+
+        panelSeleccion.add(new JLabel("Fila:"));
+        panelSeleccion.add(selectorFila);
+        panelSeleccion.add(new JLabel("Columna:"));
+        panelSeleccion.add(selectorColumna);
+
+        JButton btnIrSeleccion = crearBoton("Ir a celda");
+        btnIrSeleccion.addActionListener(e -> enfocarCeldaSeleccionada());
+        panelSeleccion.add(new JLabel(""));
+        panelSeleccion.add(btnIrSeleccion);
+
+        JPanel panelBotones = new JPanel(new GridLayout(0, 1, 6, 6));
+        panelBotones.setBackground(FONDO_APP);
 
         JButton btnCargar = crearBoton("Cargar ejemplo");
         JButton btnLimpiar = crearBoton("Limpiar tablero");
@@ -92,52 +132,40 @@ public class Vista extends JFrame {
             if (!actualizarTableroDesdeVista()) {
                 return;
             }
-            Coordenada sel = obtenerCeldaSeleccionada();
-            if (sel == null) {
-                escribirMensaje("Selecciona una celda para consultar candidatos.");
-                return;
-            }
+            Coordenada sel = obtenerSeleccionActual();
             List<Integer> candidatos = analizador.numerosPosiblesEnCelda(tablero, sel.getFila(), sel.getColumna());
             escribirMensaje("Posibles en celda " + sel + ": " + candidatos);
+            enfocarCeldaSeleccionada();
         });
 
         btnPosiblesFila.addActionListener(e -> {
             if (!actualizarTableroDesdeVista()) {
                 return;
             }
-            Coordenada sel = obtenerCeldaSeleccionada();
-            if (sel == null) {
-                escribirMensaje("Selecciona una celda de la fila a analizar.");
-                return;
-            }
+            Coordenada sel = obtenerSeleccionActual();
             Map<Coordenada, List<Integer>> mapa = analizador.numerosPosiblesEnFila(tablero, sel.getFila());
             escribirMensaje("Candidatos por celda en fila " + (sel.getFila() + 1) + ":\n" + mapa);
+            enfocarCeldaSeleccionada();
         });
 
         btnPosiblesColumna.addActionListener(e -> {
             if (!actualizarTableroDesdeVista()) {
                 return;
             }
-            Coordenada sel = obtenerCeldaSeleccionada();
-            if (sel == null) {
-                escribirMensaje("Selecciona una celda de la columna a analizar.");
-                return;
-            }
+            Coordenada sel = obtenerSeleccionActual();
             Map<Coordenada, List<Integer>> mapa = analizador.numerosPosiblesEnColumna(tablero, sel.getColumna());
             escribirMensaje("Candidatos por celda en columna " + (sel.getColumna() + 1) + ":\n" + mapa);
+            enfocarCeldaSeleccionada();
         });
 
         btnPosiblesBloque.addActionListener(e -> {
             if (!actualizarTableroDesdeVista()) {
                 return;
             }
-            Coordenada sel = obtenerCeldaSeleccionada();
-            if (sel == null) {
-                escribirMensaje("Selecciona una celda del bloque 3x3 a analizar.");
-                return;
-            }
+            Coordenada sel = obtenerSeleccionActual();
             Map<Coordenada, List<Integer>> mapa = analizador.numerosPosiblesEnBloque(tablero, sel.getFila(), sel.getColumna());
             escribirMensaje("Candidatos por celda en bloque de " + sel + ":\n" + mapa);
+            enfocarCeldaSeleccionada();
         });
 
         btnResolver.addActionListener(e -> {
@@ -148,25 +176,74 @@ public class Vista extends JFrame {
             refrescarVistaDesdeTablero();
             if (!paso.isResuelto()) {
                 escribirMensaje(paso.getExplicacion());
+                enfocarCeldaSeleccionada();
                 return;
             }
+
+            selectorFila.setSelectedIndex(paso.getFila());
+            selectorColumna.setSelectedIndex(paso.getColumna());
+            actualizarResaltadoSeleccion();
+
             escribirMensaje("Método: " + paso.getMetodo()
                     + "\nNúmero: " + paso.getNumero()
                     + " en celda " + new Coordenada(paso.getFila(), paso.getColumna())
                     + "\nExplicación: " + paso.getExplicacion()
                     + "\nCeldas analizadas: " + paso.getCeldasAnalizadas());
+            enfocarCeldaSeleccionada();
         });
 
-        panel.add(btnCargar);
-        panel.add(btnLimpiar);
-        panel.add(btnPosiblesCelda);
-        panel.add(btnPosiblesFila);
-        panel.add(btnPosiblesColumna);
-        panel.add(btnPosiblesBloque);
-        panel.add(btnResolver);
-        panel.setBorder(BorderFactory.createTitledBorder("Acciones"));
+        panelBotones.add(btnCargar);
+        panelBotones.add(btnLimpiar);
+        panelBotones.add(btnPosiblesCelda);
+        panelBotones.add(btnPosiblesFila);
+        panelBotones.add(btnPosiblesColumna);
+        panelBotones.add(btnPosiblesBloque);
+        panelBotones.add(btnResolver);
+        panelBotones.setBorder(BorderFactory.createTitledBorder("Acciones"));
 
+        panel.add(panelSeleccion, BorderLayout.NORTH);
+        panel.add(panelBotones, BorderLayout.CENTER);
         return panel;
+    }
+
+    private void inicializarSelectores() {
+        for (int i = 1; i <= 9; i++) {
+            selectorFila.addItem(i);
+            selectorColumna.addItem(i);
+        }
+
+        selectorFila.setSelectedIndex(0);
+        selectorColumna.setSelectedIndex(0);
+
+        selectorFila.addActionListener(e -> actualizarResaltadoSeleccion());
+        selectorColumna.addActionListener(e -> actualizarResaltadoSeleccion());
+    }
+
+    private Coordenada obtenerSeleccionActual() {
+        int fila = selectorFila.getSelectedIndex();
+        int columna = selectorColumna.getSelectedIndex();
+        return new Coordenada(fila, columna);
+    }
+
+    private void enfocarCeldaSeleccionada() {
+        Coordenada coordenada = obtenerSeleccionActual();
+        celdas[coordenada.getFila()][coordenada.getColumna()].requestFocusInWindow();
+        actualizarResaltadoSeleccion();
+    }
+
+    private void actualizarResaltadoSeleccion() {
+        Coordenada seleccion = obtenerSeleccionActual();
+        for (int fila = 0; fila < 9; fila++) {
+            for (int columna = 0; columna < 9; columna++) {
+                if (fila == seleccion.getFila() && columna == seleccion.getColumna()) {
+                    celdas[fila][columna].setBackground(FONDO_CELDA_SELECCIONADA);
+                } else if (tablero.esCeldaFija(fila, columna)) {
+                    celdas[fila][columna].setBackground(FONDO_CELDA_FIJA);
+                } else {
+                    celdas[fila][columna].setBackground(FONDO_CELDA);
+                }
+            }
+        }
     }
 
     private JButton crearBoton(String texto) {
@@ -242,6 +319,25 @@ public class Vista extends JFrame {
 
     private void refrescarVistaDesdeTablero() {
         int[][] datos = tablero.getCuadricula();
+        Coordenada seleccion = obtenerSeleccionActual();
+        for (int fila = 0; fila < 9; fila++) {
+            for (int columna = 0; columna < 9; columna++) {
+                int valor = datos[fila][columna];
+                celdas[fila][columna].setText(valor == 0 ? "" : String.valueOf(valor));
+                if (fila == seleccion.getFila() && columna == seleccion.getColumna()) {
+                    celdas[fila][columna].setBackground(FONDO_CELDA_SELECCIONADA);
+                } else {
+                    celdas[fila][columna].setBackground(tablero.esCeldaFija(fila, columna) ? FONDO_CELDA_FIJA : FONDO_CELDA);
+                }
+            }
+        }
+
+        refrescarVistaDesdeTablero();
+        return true;
+    }
+
+    private void refrescarVistaDesdeTablero() {
+        int[][] datos = tablero.getCuadricula();
         for (int fila = 0; fila < 9; fila++) {
             for (int columna = 0; columna < 9; columna++) {
                 int valor = datos[fila][columna];
@@ -260,6 +356,14 @@ public class Vista extends JFrame {
             }
         }
         return null;
+    }
+
+    private void escribirMensaje(String mensaje) {
+        areaMensajes.setText(mensaje);
+    }
+
+    public static void iniciar() {
+        SwingUtilities.invokeLater(Vista::new);
     }
 
     private void escribirMensaje(String mensaje) {

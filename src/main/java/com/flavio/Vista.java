@@ -413,4 +413,12 @@ public class Vista extends JFrame {
     public static void iniciar() {
         SwingUtilities.invokeLater(Vista::new);
     }
+
+    private void escribirMensaje(String mensaje) {
+        areaMensajes.setText(mensaje);
+    }
+
+    public static void iniciar() {
+        SwingUtilities.invokeLater(Vista::new);
+    }
 }

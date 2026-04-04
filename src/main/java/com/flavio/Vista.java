@@ -18,6 +18,8 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -34,7 +36,7 @@ public class Vista extends JFrame {
     private static final Color FONDO_MENSAJES = new Color(230, 246, 255);
 
     private final JTextField[][] celdas = new JTextField[9][9];
-    private final JTextArea areaMensajes = new JTextArea(8, 40);
+    private final JTextArea areaMensajes = new JTextArea(10, 40);
     private final TableroSudoku tablero = new TableroSudoku();
     private final AnalizadorCandidatos analizador = new AnalizadorCandidatos();
     private final ResolutorSudoku resolutor = new ResolutorSudoku();
@@ -150,7 +152,7 @@ public class Vista extends JFrame {
             }
             Coordenada sel = obtenerSeleccionActual();
             List<Integer> candidatos = analizador.numerosPosiblesEnCelda(tablero, sel.getFila(), sel.getColumna());
-            escribirMensaje("Posibles en celda " + sel + ": " + candidatos);
+            escribirMensaje(formatearCandidatosCelda(sel, candidatos));
             enfocarCeldaSeleccionada();
         });
 
@@ -160,7 +162,7 @@ public class Vista extends JFrame {
             }
             Coordenada sel = obtenerSeleccionActual();
             Map<Coordenada, List<Integer>> mapa = analizador.numerosPosiblesEnFila(tablero, sel.getFila());
-            escribirMensaje("Candidatos por celda en fila " + (sel.getFila() + 1) + ":\n" + mapa);
+            escribirMensaje(formatearMapaCandidatos("CANDIDATOS EN FILA " + (sel.getFila() + 1), mapa));
             enfocarCeldaSeleccionada();
         });
 
@@ -170,7 +172,7 @@ public class Vista extends JFrame {
             }
             Coordenada sel = obtenerSeleccionActual();
             Map<Coordenada, List<Integer>> mapa = analizador.numerosPosiblesEnColumna(tablero, sel.getColumna());
-            escribirMensaje("Candidatos por celda en columna " + (sel.getColumna() + 1) + ":\n" + mapa);
+            escribirMensaje(formatearMapaCandidatos("CANDIDATOS EN COLUMNA " + (sel.getColumna() + 1), mapa));
             enfocarCeldaSeleccionada();
         });
 
@@ -180,7 +182,9 @@ public class Vista extends JFrame {
             }
             Coordenada sel = obtenerSeleccionActual();
             Map<Coordenada, List<Integer>> mapa = analizador.numerosPosiblesEnBloque(tablero, sel.getFila(), sel.getColumna());
-            escribirMensaje("Candidatos por celda en bloque de " + sel + ":\n" + mapa);
+            int bloqueFila = (sel.getFila() / 3) + 1;
+            int bloqueColumna = (sel.getColumna() / 3) + 1;
+            escribirMensaje(formatearMapaCandidatos("CANDIDATOS EN BLOQUE (" + bloqueFila + "," + bloqueColumna + ")", mapa));
             enfocarCeldaSeleccionada();
         });
 
@@ -200,11 +204,7 @@ public class Vista extends JFrame {
             selectorColumna.setSelectedIndex(paso.getColumna());
             actualizarResaltadoSeleccion();
 
-            escribirMensaje("Método: " + paso.getMetodo()
-                    + "\nNúmero: " + paso.getNumero()
-                    + " en celda " + new Coordenada(paso.getFila(), paso.getColumna())
-                    + "\nExplicación: " + paso.getExplicacion()
-                    + "\nCeldas analizadas: " + paso.getCeldasAnalizadas());
+            escribirMensaje(formatearPasoResolucion(paso));
             enfocarCeldaSeleccionada();
         });
 
@@ -275,6 +275,7 @@ public class Vista extends JFrame {
         areaMensajes.setLineWrap(true);
         areaMensajes.setWrapStyleWord(true);
         areaMensajes.setBackground(FONDO_MENSAJES);
+        areaMensajes.setFont(new Font("Monospaced", Font.PLAIN, 12));
         JScrollPane scroll = new JScrollPane(areaMensajes);
         scroll.setBorder(BorderFactory.createTitledBorder("Explicación"));
         return scroll;
@@ -347,6 +348,70 @@ public class Vista extends JFrame {
                 }
             }
         }
+    }
+
+    private String formatearCandidatosCelda(Coordenada celda, List<Integer> candidatos) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("CONSULTA DE CELDA\n");
+        sb.append("----------------------------------------\n");
+        sb.append("Celda seleccionada: ").append(celda).append("\n");
+        sb.append("Candidatos: ").append(candidatos).append("\n");
+        sb.append("----------------------------------------\n");
+        return sb.toString();
+    }
+
+    private String formatearMapaCandidatos(String titulo, Map<Coordenada, List<Integer>> mapa) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(titulo).append("\n");
+        sb.append("----------------------------------------\n");
+
+        List<Map.Entry<Coordenada, List<Integer>>> entradas = new ArrayList<>(mapa.entrySet());
+        entradas.sort(Comparator
+                .comparingInt((Map.Entry<Coordenada, List<Integer>> e) -> e.getKey().getFila())
+                .thenComparingInt(e -> e.getKey().getColumna()));
+
+        if (entradas.isEmpty()) {
+            sb.append("No hay celdas vacías en esta unidad.\n");
+        } else {
+            for (Map.Entry<Coordenada, List<Integer>> entry : entradas) {
+                sb.append("Celda ").append(entry.getKey())
+                        .append(" -> ").append(entry.getValue())
+                        .append("\n");
+            }
+        }
+
+        sb.append("----------------------------------------\n");
+        return sb.toString();
+    }
+
+    private String formatearPasoResolucion(PasoResolucion paso) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("RESOLVER SIGUIENTE MOVIMIENTO\n");
+        sb.append("----------------------------------------\n");
+
+        if (!paso.isResuelto()) {
+            sb.append("No se encontró movimiento con técnicas actuales.\n");
+            sb.append("Sugerencia: implementar técnicas avanzadas (pares desnudos, pares ocultos, pointing pairs).\n");
+            sb.append("----------------------------------------\n");
+            return sb.toString();
+        }
+
+        sb.append("Método: ").append(paso.getMetodo()).append("\n");
+        sb.append("Número colocado: ").append(paso.getNumero()).append("\n");
+        sb.append("Celda destino: ").append(new Coordenada(paso.getFila(), paso.getColumna())).append("\n");
+        sb.append("Motivo: ").append(paso.getExplicacion()).append("\n");
+        sb.append("Celdas analizadas: ").append(paso.getCeldasAnalizadas()).append("\n");
+        sb.append("----------------------------------------\n");
+        return sb.toString();
+    }
+
+    private void escribirMensaje(String mensaje) {
+        areaMensajes.setText(mensaje);
+        areaMensajes.setCaretPosition(0);
+    }
+
+    public static void iniciar() {
+        SwingUtilities.invokeLater(Vista::new);
     }
 
     private void escribirMensaje(String mensaje) {

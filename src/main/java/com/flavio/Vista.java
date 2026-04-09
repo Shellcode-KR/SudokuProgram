@@ -58,6 +58,8 @@ public class Vista extends JFrame {
         actualizarResaltadoSeleccion();
 
         pack();
+        setMinimumSize(new java.awt.Dimension(1100, 760));
+        setSize(1180, 820);
         setLocationRelativeTo(null);
         setVisible(true);
     }
@@ -408,14 +410,6 @@ public class Vista extends JFrame {
     private void escribirMensaje(String mensaje) {
         areaMensajes.setText(mensaje);
         areaMensajes.setCaretPosition(0);
-    }
-
-    public static void iniciar() {
-        SwingUtilities.invokeLater(Vista::new);
-    }
-
-    private void escribirMensaje(String mensaje) {
-        areaMensajes.setText(mensaje);
     }
 
     public static void iniciar() {

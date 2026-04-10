@@ -562,7 +562,10 @@ public class ResolutorSudoku {
                                                      String detalle,
                                                      List<Coordenada> analizadas) {
         if (removidos.isEmpty()) return PasoResolucion.sinResolucion();
+<<<<<<< codex/create-sudoku-application-with-validation-methods-mcan4l
 
+=======
+>>>>>>> main
         for (Map.Entry<Coordenada, Set<Integer>> entry : removidos.entrySet()) {
             Coordenada coord = entry.getKey();
             Set<Integer> nuevos = new HashSet<>(candidatos.get(coord));
@@ -570,6 +573,7 @@ public class ResolutorSudoku {
             if (nuevos.size() == 1) {
                 int numero = nuevos.iterator().next();
                 tablero.setNumero(coord.getFila(), coord.getColumna(), numero);
+<<<<<<< codex/create-sudoku-application-with-validation-methods-mcan4l
 
                 Map<Coordenada, List<Integer>> eliminados = new HashMap<>();
                 for (Map.Entry<Coordenada, Set<Integer>> rem : removidos.entrySet()) {
@@ -600,6 +604,12 @@ public class ResolutorSudoku {
                         eliminados,
                         "Unidad/patrón detectado por " + tecnica,
                         pasos);
+=======
+                return new PasoResolucion(true, coord.getFila(), coord.getColumna(), numero,
+                        tecnica,
+                        detalle + " Tras la eliminación, la celda " + coord + " queda forzada a " + numero + ".",
+                        analizadas);
+>>>>>>> main
             }
         }
         return PasoResolucion.sinResolucion();

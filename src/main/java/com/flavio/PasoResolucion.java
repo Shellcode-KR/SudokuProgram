@@ -1,5 +1,6 @@
 package com.flavio;
 
+<<<<<<< codex/create-sudoku-application-with-validation-methods-mcan4l
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,6 +16,12 @@ public class PasoResolucion {
         SIN_RESOLUCION
     }
 
+=======
+import java.util.Collections;
+import java.util.List;
+
+public class PasoResolucion {
+>>>>>>> main
     private final boolean resuelto;
     private final int fila;
     private final int columna;
@@ -23,6 +30,7 @@ public class PasoResolucion {
     private final String explicacion;
     private final List<Coordenada> celdasAnalizadas;
 
+<<<<<<< codex/create-sudoku-application-with-validation-methods-mcan4l
     private final TipoRazonamiento tipoRazonamiento;
     private final List<Coordenada> celdasPatron;
     private final List<Coordenada> celdasAfectadas;
@@ -49,12 +57,17 @@ public class PasoResolucion {
                           Map<Coordenada, List<Integer>> candidatosEliminadosPorCelda,
                           String unidadClave,
                           List<String> explicacionPasoAPaso) {
+=======
+    public PasoResolucion(boolean resuelto, int fila, int columna, int numero,
+                          String metodo, String explicacion, List<Coordenada> celdasAnalizadas) {
+>>>>>>> main
         this.resuelto = resuelto;
         this.fila = fila;
         this.columna = columna;
         this.numero = numero;
         this.metodo = metodo;
         this.explicacion = explicacion;
+<<<<<<< codex/create-sudoku-application-with-validation-methods-mcan4l
         this.celdasAnalizadas = celdasAnalizadas == null ? Collections.emptyList() : celdasAnalizadas;
         this.tipoRazonamiento = tipoRazonamiento;
         this.celdasPatron = celdasPatron == null ? Collections.emptyList() : celdasPatron;
@@ -79,6 +92,14 @@ public class PasoResolucion {
                 Collections.emptyMap(),
                 "Sin unidad clave",
                 pasos);
+=======
+        this.celdasAnalizadas = celdasAnalizadas;
+    }
+
+    public static PasoResolucion sinResolucion() {
+        return new PasoResolucion(false, -1, -1, -1,
+                "Sin resolución", "No se encontró una jugada con las técnicas implementadas.", Collections.emptyList());
+>>>>>>> main
     }
 
     public boolean isResuelto() {
@@ -108,6 +129,7 @@ public class PasoResolucion {
     public List<Coordenada> getCeldasAnalizadas() {
         return celdasAnalizadas;
     }
+<<<<<<< codex/create-sudoku-application-with-validation-methods-mcan4l
 
     public TipoRazonamiento getTipoRazonamiento() {
         return tipoRazonamiento;
@@ -157,4 +179,6 @@ public class PasoResolucion {
         pasos.add(explicacion);
         return pasos;
     }
+=======
+>>>>>>> main
 }

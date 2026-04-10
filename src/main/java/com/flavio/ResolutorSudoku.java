@@ -562,6 +562,10 @@ public class ResolutorSudoku {
                                                      String detalle,
                                                      List<Coordenada> analizadas) {
         if (removidos.isEmpty()) return PasoResolucion.sinResolucion();
+<<<<<<< codex/create-sudoku-application-with-validation-methods-mcan4l
+
+=======
+>>>>>>> main
         for (Map.Entry<Coordenada, Set<Integer>> entry : removidos.entrySet()) {
             Coordenada coord = entry.getKey();
             Set<Integer> nuevos = new HashSet<>(candidatos.get(coord));
@@ -569,10 +573,43 @@ public class ResolutorSudoku {
             if (nuevos.size() == 1) {
                 int numero = nuevos.iterator().next();
                 tablero.setNumero(coord.getFila(), coord.getColumna(), numero);
+<<<<<<< codex/create-sudoku-application-with-validation-methods-mcan4l
+
+                Map<Coordenada, List<Integer>> eliminados = new HashMap<>();
+                for (Map.Entry<Coordenada, Set<Integer>> rem : removidos.entrySet()) {
+                    eliminados.put(rem.getKey(), new ArrayList<>(rem.getValue()));
+                }
+
+                List<String> pasos = new ArrayList<>();
+                pasos.add("Se detectó patrón de técnica: " + tecnica + ".");
+                pasos.add("Se eliminaron candidatos en celdas afectadas: " + eliminados + ".");
+                pasos.add("Después de eliminar, la celda " + coord + " quedó forzada al valor " + numero + ".");
+
+                PasoResolucion.TipoRazonamiento tipo = PasoResolucion.TipoRazonamiento.LOGICA_INTERMEDIA;
+                if ("X-Wing".equals(tecnica) || "Swordfish".equals(tecnica)
+                        || "XY-Wing".equals(tecnica) || "Rectángulo único".equals(tecnica)) {
+                    tipo = PasoResolucion.TipoRazonamiento.LOGICA_AVANZADA;
+                }
+
+                return new PasoResolucion(true,
+                        coord.getFila(),
+                        coord.getColumna(),
+                        numero,
+                        tecnica,
+                        detalle + " Tras la eliminación, la celda " + coord + " queda forzada a " + numero + ".",
+                        analizadas,
+                        tipo,
+                        analizadas,
+                        new ArrayList<>(removidos.keySet()),
+                        eliminados,
+                        "Unidad/patrón detectado por " + tecnica,
+                        pasos);
+=======
                 return new PasoResolucion(true, coord.getFila(), coord.getColumna(), numero,
                         tecnica,
                         detalle + " Tras la eliminación, la celda " + coord + " queda forzada a " + numero + ".",
                         analizadas);
+>>>>>>> main
             }
         }
         return PasoResolucion.sinResolucion();

@@ -393,16 +393,27 @@ public class Vista extends JFrame {
 
         if (!paso.isResuelto()) {
             sb.append("No se encontró movimiento con técnicas actuales.\n");
-            sb.append("Sugerencia: implementar técnicas avanzadas (pares desnudos, pares ocultos, pointing pairs).\n");
+            sb.append("Tipo de razonamiento: ").append(paso.getTipoRazonamiento()).append("\n");
+            for (int i = 0; i < paso.getExplicacionPasoAPaso().size(); i++) {
+                sb.append(i + 1).append(". ").append(paso.getExplicacionPasoAPaso().get(i)).append("\n");
+            }
             sb.append("----------------------------------------\n");
             return sb.toString();
         }
 
         sb.append("Método: ").append(paso.getMetodo()).append("\n");
+        sb.append("Tipo: ").append(paso.getTipoRazonamiento()).append("\n");
+        sb.append("Unidad clave: ").append(paso.getUnidadClave()).append("\n");
         sb.append("Número colocado: ").append(paso.getNumero()).append("\n");
         sb.append("Celda destino: ").append(new Coordenada(paso.getFila(), paso.getColumna())).append("\n");
         sb.append("Motivo: ").append(paso.getExplicacion()).append("\n");
-        sb.append("Celdas analizadas: ").append(paso.getCeldasAnalizadas()).append("\n");
+        sb.append("Celdas patrón: ").append(paso.getCeldasPatron()).append("\n");
+        sb.append("Celdas afectadas: ").append(paso.getCeldasAfectadas()).append("\n");
+        sb.append("Candidatos eliminados: ").append(paso.getCandidatosEliminadosPorCelda()).append("\n");
+        sb.append("Paso a paso:\n");
+        for (int i = 0; i < paso.getExplicacionPasoAPaso().size(); i++) {
+            sb.append(i + 1).append(". ").append(paso.getExplicacionPasoAPaso().get(i)).append("\n");
+        }
         sb.append("----------------------------------------\n");
         return sb.toString();
     }
